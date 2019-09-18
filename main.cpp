@@ -46,8 +46,8 @@ void UploadSurfaceToTexture(cairo_surface_t* Surface, GLuint Texture)
 	cairo_surface_flush(Surface);
 	glTextureStorage2D(Texture, 1, GL_RGBA8, ScreenWidth, ScreenHeight);
 	glTextureSubImage2D(Texture, 0, 0, 0, ScreenWidth, ScreenHeight, GL_RGBA,
-		GL_UNSIGNED_INT_8_8_8_8_REV,
-		(GLuint*)cairo_image_surface_get_data(Surface));
+		GL_FLOAT,
+		(GLfloat*)cairo_image_surface_get_data(Surface));
 	glTextureParameteri(Texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(Texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(Texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -74,7 +74,7 @@ StatusCode RenderingEvents::Setup()
 
 	{
 		cairo_surface_t* Surface;
-		Surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ScreenWidth, ScreenHeight);
+		Surface = cairo_image_surface_create(CAIRO_FORMAT_RGBA128F, ScreenWidth, ScreenHeight);
 		DrawTestImage(Surface);
 		glCreateTextures(GL_TEXTURE_2D, 1, &TestTexture);
 		UploadSurfaceToTexture(Surface, TestTexture);
