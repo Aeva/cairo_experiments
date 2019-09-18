@@ -1,0 +1,14 @@
+hail_eris
+librenderdoc.so
+renderdoc.h
+*.built
+__pycache__
+*.pyc
+glue/compiled
+*.rdc
+.vs/
+Debug/
+*.sln
+*.vcxproj
+*.vcxproj.*
+x64/
