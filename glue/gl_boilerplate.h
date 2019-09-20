@@ -7,8 +7,8 @@
 #include "errors.h"
 
 
-const int ScreenWidth = 2048;
-const int ScreenHeight = 2048;
+const int ScreenWidth = 1024;
+const int ScreenHeight = 1024;
 
 
 struct ShaderPipeline
