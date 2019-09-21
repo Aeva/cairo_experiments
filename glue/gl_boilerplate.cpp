@@ -198,10 +198,23 @@ void ShaderPipeline::Activate()
 }
 
 
-void Buffer::Initialize(void* Data, size_t Bytes)
+void Buffer::Initialize(size_t Bytes)
 {
-	glCreateBuffers(1, &BufferID);
-	glNamedBufferStorage(BufferID, Bytes, Data, 0);
+	if (BufferID == 0)
+	{
+		glCreateBuffers(1, &BufferID);
+		glNamedBufferStorage(BufferID, Bytes, nullptr, GL_DYNAMIC_STORAGE_BIT);
+	}
+}
+
+
+void Buffer::Upload(void* Data, size_t Bytes)
+{
+	if (BufferID == 0)
+	{
+		Initialize(Bytes);
+	}
+	glNamedBufferSubData(BufferID, 0, Bytes, Data);
 }
 
 

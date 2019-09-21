@@ -25,7 +25,8 @@ struct ShaderPipeline
 struct Buffer
 {
 	GLuint BufferID;
-	void Initialize(void* Data, size_t Bytes);
+	void Initialize(size_t Bytes);
+	void Upload(void* Data, size_t Bytes);
 	void Bind(GLenum Target, GLuint BindingIndex);
 };
 
