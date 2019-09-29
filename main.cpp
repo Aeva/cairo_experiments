@@ -17,29 +17,77 @@ Buffer ScreenInfo;
 std::vector<CairoQuad> Quads;
 
 
+double Texel(int Pixel)
+{
+	return double(Pixel) + 0.5;
+}
+#define Texel2(PX1, PX2) Texel(PX1), Texel(PX2)
+#define Texel3(PX1, PX2, PX3) Texel(PX1), Texel(PX2), Texel(PX3)
+#define Texel4(PX1, PX2, PX3, PX4) Texel(PX1), Texel(PX2), Texel(PX3), Texel(PX4)
+
+
 void DrawTestImage(cairo_t* Ctx, AABB Bounds)
 {
 	cairo_set_source_rgba(Ctx, 1.0, 0.0, 1.0, 0.5);
 	cairo_paint(Ctx);
 
-	//cairo_scale(Ctx, 1.0, -1.0);
-	//cairo_translate(Ctx, 0.0, double(-Bounds.Height));
-	const int Samples = 30;
-	for (int i = 0; i <= Samples; ++i)
+	const int Top = 0;
+	const int Left = 0;
+	const int Bottom = Bounds.Height - 1;
+	const int Right = Bounds.Width - 1;
+	const int Width = Right - Left;
+	const int Height = Bottom - Top;
+	const int CenterX = Bounds.Width / 2 - 1;
+	const int CenterY = Bounds.Height / 2 - 1;
+
+	const int LineWidth = 1;
+	const int Margin = LineWidth + 2;
+
+	const float FontSize = Bounds.Height / 1.8;
+	const float HalfSize = FontSize / 2;
+
 	{
-		double a = double(i) / double(Samples);
-		if (i == Samples)
+		cairo_pattern_t* Gradient = cairo_pattern_create_linear(Texel4(CenterX, Top, CenterX, Bottom));
+		cairo_pattern_add_color_stop_rgba(Gradient, 0.0, 1.0, 1.0, 1.0, 0.9);
+		cairo_pattern_add_color_stop_rgba(Gradient, 1.0, 0.7, 0.7, 0.7, 0.9);
+		cairo_set_source(Ctx, Gradient);
+		cairo_pattern_destroy(Gradient);
+		cairo_rectangle(Ctx, Texel2(Left + Margin, Top + Margin), Width - (Margin * 2), Height - (Margin * 2));
+		cairo_fill(Ctx);
+	}
+
+	{
+		cairo_set_source_rgba(Ctx, 0.85, 0.85, 0.85, 1.0);
+		cairo_set_line_width(Ctx, 1.0);
+		const int LineSpacing = 3;
+		for (int i = LineSpacing; i < (Bottom - (Margin * 2)); i += LineSpacing)
 		{
-			cairo_set_source_rgba(Ctx, 1.0, 0.5, 0.5, 1.0);
+			cairo_move_to(Ctx, Texel2(Left + Margin, Top + Margin + i));
+			cairo_line_to(Ctx, Texel2(Right - Margin, Top + Margin + i));
 		}
-		else
-		{
-			cairo_set_source_rgba(Ctx, a, 0.0, a * 0.7, a);
-		}
+		cairo_stroke(Ctx);
+	}
+
+	{
+		cairo_set_source_rgba(Ctx, 1.0, 1.0, 1.0, 1.0);
+		cairo_set_line_width(Ctx, double(LineWidth));
+		cairo_rectangle(Ctx, Texel2(Left + Margin, Top + Margin), Width - (Margin * 2), Height - (Margin * 2));
+		cairo_stroke(Ctx);
+	}
+
+	{
+		const int Margin = (LineWidth * 2) + 2;
+		cairo_set_source_rgba(Ctx, 0.0, 0.0, 0.0, 1.0);
+		cairo_set_line_width(Ctx, double(LineWidth));
+		cairo_rectangle(Ctx, Texel2(Left + Margin, Top + Margin), Width - (Margin * 2), Height - (Margin * 2));
+		cairo_stroke(Ctx);
+	}
+
+	{
 		cairo_select_font_face(Ctx, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-		cairo_set_font_size(Ctx, 256.0);
-		cairo_move_to(Ctx, 100.0 * a - 80.0, 200.0 * a + 500.0);
-		cairo_show_text(Ctx, "OwO");
+		cairo_set_font_size(Ctx, FontSize);
+		cairo_move_to(Ctx, Texel2(Left + 4, Top + (FontSize * 0.8)));
+		cairo_show_text(Ctx, "o.O");
 	}
 }
 
@@ -63,12 +111,12 @@ StatusCode RenderingEvents::Setup(GLFWwindow* Window)
 		ScreenInfo.Upload((void*)&BufferData, sizeof(BufferData));
 	}
 
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		int Offset = i * 100;
 
 		Quads.emplace_back();
-		Quads[i].Resize(ScreenWidth - 200, ScreenHeight - 200);
+		Quads[i].Resize(400, 400);
 		Quads[i].Move(Offset, Offset);
 		Quads[i].SetDrawFn(DrawTestImage);
 	}
@@ -130,6 +178,7 @@ void RenderingEvents::CharCallback(GLFWwindow* Window, unsigned int CodePoint)
 
 void RenderingEvents::CursorPosCallback(GLFWwindow* Window, double CursorX, double CursorY)
 {
+	// Top-left is the origin.
 #if DEBUG_INPUT_EVENTS
 	std::cout << "MouseMove: " << CursorX << ", " << CursorY << "\n";
 #endif
