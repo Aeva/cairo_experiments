@@ -1,13 +1,13 @@
-//#include <math.h>
 #include <iostream>
-//#include <fstream>
 #include <vector>
+#include "cairo.h"
+
 #include "glue/gl_boilerplate.h"
 #include "main.h"
 #include "aabb.h"
 #include "quad.h"
 
-#include "cairo.h"
+#define DEBUG_INPUT_EVENTS 0
 
 ShaderPipeline BgShader;
 ShaderPipeline QuadShader;
@@ -44,7 +44,7 @@ void DrawTestImage(cairo_t* Ctx, AABB Bounds)
 }
 
 
-StatusCode RenderingEvents::Setup()
+StatusCode RenderingEvents::Setup(GLFWwindow* Window)
 {
 	RETURN_ON_FAIL(BgShader.Setup(
 		{ {GL_VERTEX_SHADER, "shaders/splat.vs.glsl"},
@@ -88,7 +88,80 @@ StatusCode RenderingEvents::Setup()
 	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 	glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
+	glfwSetKeyCallback(Window, RenderingEvents::KeyCallback);
+	glfwSetCharCallback(Window, RenderingEvents::CharCallback);
+	glfwSetCursorPosCallback(Window, RenderingEvents::CursorPosCallback);
+	glfwSetCursorEnterCallback(Window, RenderingEvents::CursorEnterCallback);
+	glfwSetMouseButtonCallback(Window, RenderingEvents::MouseButtonCallback);
+	glfwSetScrollCallback(Window, RenderingEvents::ScrollCallback);
+
 	return StatusCode::PASS;
+}
+
+
+void RenderingEvents::KeyCallback(GLFWwindow* Window, int Key, int ScanCode, int Action, int Modifiers)
+{
+	// For "Key" defines, see https://www.glfw.org/docs/latest/group__keys.html
+	// "Action" will be one of GLFW_PRESS, GLFW_REPEAT or GLFW_RELEASE.
+	// The docs suggest this callback doesn't honor the keyboard layout, but
+	// in practice it seems to do so just fine?
+#if DEBUG_INPUT_EVENTS
+	const char* KeyName = glfwGetKeyName(Key, ScanCode);
+	const char* ActionName = (Action == GLFW_PRESS ? "Pressed" : (Action == GLFW_REPEAT ? "Repeat" : "Released"));
+	if (KeyName)
+	{
+		std::cout << "KeyCallback: " << KeyName << " " << ActionName << "\n";
+	}
+	else
+	{
+		std::cout << "KeyCallback: nameless key " << ActionName << "\n";
+	}
+#endif
+}
+
+
+void RenderingEvents::CharCallback(GLFWwindow* Window, unsigned int CodePoint)
+{
+#if DEBUG_INPUT_EVENTS
+	std::cout << "CharCallback: \"" << (char)CodePoint << "\"\n";
+#endif
+}
+
+
+void RenderingEvents::CursorPosCallback(GLFWwindow* Window, double CursorX, double CursorY)
+{
+#if DEBUG_INPUT_EVENTS
+	std::cout << "MouseMove: " << CursorX << ", " << CursorY << "\n";
+#endif
+}
+
+
+void RenderingEvents::CursorEnterCallback(GLFWwindow* Window, int Entered)
+{
+	// Called when the Cursor enders or leaves the window.
+}
+
+
+void RenderingEvents::MouseButtonCallback(GLFWwindow* Window, int Button, int Action, int Modifiers)
+{
+	// For "Button" defines, see https://www.glfw.org/docs/latest/group__buttons.html
+	// "Action" will be one of GLFW_PRESS or GLFW_RELEASE.
+#if DEBUG_INPUT_EVENTS
+	const char* ActionName = (Action == GLFW_PRESS ? "Pressed" : "Released");
+	const char* ButtonName = (Button == GLFW_MOUSE_BUTTON_LEFT ? "Left" : (Button == GLFW_MOUSE_BUTTON_RIGHT ? "Right" : (Button == GLFW_MOUSE_BUTTON_MIDDLE ? "Middle" : "Unknown")));
+	std::cout << "MouseButton:" << ButtonName << " button " << ActionName << "\n";
+#endif
+}
+
+
+void RenderingEvents::ScrollCallback(GLFWwindow* Window, double ScrollX, double ScrollY)
+{
+	// ScrollY < 0 means scrolling downward.
+	// ScrollY > 0 means scrolling upward.
+	// Value will be something like "-1" or "-2".
+#if DEBUG_INPUT_EVENTS
+	std::cout << "Scroll By:" << ScrollX << ", " << ScrollY << "\n";
+#endif
 }
 
 

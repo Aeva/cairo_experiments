@@ -139,7 +139,7 @@ StatusCode SetupGLFW()
 StatusCode DemoSetup ()
 {
 	glUseProgram(0);
-	RETURN_ON_FAIL(RenderingEvents::Setup());
+	RETURN_ON_FAIL(RenderingEvents::Setup(Window));
 	return StatusCode::PASS;
 }
 
